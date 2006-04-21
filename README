@@ -1,0 +1,7 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=1523
+
+This script was inspired by Borland Delphis code template function.
+
+Templates can be defined in text files. The filename (wihtout extension) is the template name. By entering the template name in the document and pressing the expasion key (predefined to <F6>) the template is expanded.
+
+Templates can also use macros which will be replaced bei either a user defined or a predefined text during template expansion.

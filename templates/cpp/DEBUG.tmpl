@@ -1,0 +1,241 @@
+// Debugging {{{
+
+
+#ifdef DEBUG
+# define DEBUG_CONST
+# define DEBUG_DEST
+# define DEBUG_MODE 0
+# define _DEBUG_FILE
+#endif
+ 
+
+// {{{ Documentation:
+
+/**
+ * \page MCdebug Debugging in 
+ *
+ * Debugging in the marching cubes engine works by including the file debug.h into the files where
+ * debug output is needed. Befor including the file the macro \ref DEBUG_MODE should be defined to
+ * the desired debug level. The debug macros such as \ref DEBUG0 or \ref DEBUG1 have the level in
+ * their name and will be executed if the actual debug level is smaller or equal to the level of the
+ * macro. The macros are designed to introduce no extra code if they are disabled. There exists a
+ * spezial debug macros called \ref TODO. It will be executed as long as the debug level is samller
+ * or equal than \em 99. Taking this aspect into account the debug level of \em 99 is very special
+ * because is disables all nurmal debug output but does not deisable the \ref TODO output. Every
+ * debug macro prints it's output to stderr.
+ *
+ * <h2>Debugging OpenGL</h2>
+ *
+ * I have included marginal support for debugging OpenGL function calls. It is realised by
+ * redefining the OpenGL funcions such that first the signature is printed to stderr and then the
+ * function itself is called. This has two big implication:
+ * \li	The return values of the functions can not be used. If this is necessary, the debugging
+ *	macro should be removed or commented out.
+ * \li	The debugging header file must be included after any OpenGL include file.
+ *
+ * \todo	Remove all macros for functions that return pointers or can be identified as
+ *		functions with important return values.
+ */
+
+/**
+ * \def DEBUG_MODE
+ *
+ * Defines the actual debug level of the file. Every debug statement with a level equal or grater
+ * than DEBUG_MODE will be executed. A spezial debug level is level zero. This level should be used
+ * to display the function calls.
+ */
+
+/**
+ * \def DEBUG0(msg)
+ *
+ * Defines a debug output for level \c 0. \p msg will be written stderr. This level is a spezial one
+ * because it is designed to print the function calls. The preceeding text befor \p msg includes the
+ * word \c DEBUG0 followed by the filename where the function can be found and the line number of
+ * debug output (see \ref DEBUG_LOCATION).
+ */
+
+/**
+ * \def DEBUG1(msg)
+ *
+ * Defines a debug output for level \c 1. The \c DEBUG macros for all subsequent debug levels look
+ * like this macro. The macro prints the word \c DEBUG<level> followed by the filename, the line
+ * number in parentheses and the function name in square brackets and after a colon the \p msg is
+ * printed.
+ */
+
+/**
+ * \def DEBUG2(msg)
+ *
+ * See \ref DEBUG1.
+ */
+
+/**
+ * \def DEBUG3(msg)
+ *
+ * See \ref DEBUG1.
+ */
+
+/**
+ * \def DEBUG4(msg)
+ *
+ * See \ref DEBUG1.
+ */
+
+/**
+ * \def DEBUG5(msg)
+ *
+ * See \ref DEBUG1.
+ */
+
+/**
+ * \def DEBUG6(msg)
+ *
+ * See \ref DEBUG1.
+ */
+
+/**
+ * \def TODO(msg)
+ *
+ * This debug macro should be used for todos. It will be executed as long as the debug level is
+ * samler or equal than \a 99. The output of this macro looks like the one in \ref DEBUG1 except
+ * that the first word is \c TODO!!.
+ */
+
+/**
+ * \def DEBUG_LOCATION
+ *
+ * Defines the prepended text in the debug output. It is composed of the file name, the line number
+ * in parentheses and the function name in square brackets followed by a colon.
+ */
+
+/**
+ * \def DEBUG_LOCATION_SHORT
+ *
+ * Defines the prepended text in \ref DEBUG0. It starts with the file name, followed by the line
+ * number in parentheses and ends with a colon.
+ */
+
+// }}}
+
+
+#ifdef NDEBUG
+# undef DEBUG_CONST
+# undef DEBUG_DEST
+# undef DEBUG_GL
+# define DEBUG_MODE 1000
+#endif
+
+#ifdef DEBUG_FILE
+#define DEBUG_LOCATION_SHORT __FILE__ << "(" << __LINE__ << "): "
+#define DEBUG_LOCATION       __FILE__ << "(" << __LINE__ << ")[" << __FUNCTION__ << "]: "
+#else
+#define DEBUG_LOCATION_SHORT ""
+#define DEBUG_LOCATION       "[" << __FUNCTION__ << "]: "
+#endif
+
+// {{{ DEBUG_CONST
+#ifdef DEBUG_CONST
+# define DEBUGC(msg)	std::cerr << "DEBUGC|" << DEBUG_LOCATION_SHORT << msg
+#else
+# define DEBUGC(msg)
+#endif
+// }}}
+
+// {{{ DEBUG_DEST
+#ifdef DEBUG_DEST
+# define DEBUGD(msg)	std::cerr << "DEBUGD|" << DEBUG_LOCATION_SHORT << msg
+#else
+# define DEBUGD(msg)
+#endif
+// }}}
+
+// {{{ DEBUG_MODE <= 0
+#if DEBUG_MODE <= 0
+# define DEBUG0(msg)	std::cerr << "DEBUG0|" << DEBUG_LOCATION_SHORT << msg
+#else
+# define DEBUG0(msg)
+#endif
+// }}}
+
+// {{{ DEBUG_MODE <= 1
+#if DEBUG_MODE <= 1
+# define DEBUG1(msg)	std::cerr << "DEBUG1|" << DEBUG_LOCATION << msg
+#else
+# define DEBUG1(msg)
+#endif
+// }}}
+
+// {{{ DEBUG_MODE <= 2
+#if DEBUG_MODE <= 2
+# define DEBUG2(msg)	std::cerr << "DEBUG2|" << DEBUG_LOCATION << msg
+#else
+# define DEBUG2(msg)
+#endif
+// }}}
+
+// {{{ DEBUG_MODE <= 3
+#if DEBUG_MODE <= 3
+# define DEBUG3(msg)	std::cerr << "DEBUG3|" << DEBUG_LOCATION << msg
+#else
+# define DEBUG3(msg)
+#endif
+// }}}
+
+// {{{ DEBUG_MODE <= 4
+#if DEBUG_MODE <= 4
+# define DEBUG4(msg)	std::cerr << "DEBUG4|" << DEBUG_LOCATION << msg
+#else
+# define DEBUG4(msg)
+#endif
+// }}}
+
+// {{{ DEBUG_MODE <= 5
+#if DEBUG_MODE <= 5
+# define DEBUG5(msg)	std::cerr << "DEBUG5|" << DEBUG_LOCATION << msg
+#else
+# define DEBUG5(msg)
+#endif
+// }}}
+
+// {{{ DEBUG_MODE <= 6
+#if DEBUG_MODE <= 6
+# define DEBUG6(msg)	std::cerr << "DEBUG6|" << DEBUG_LOCATION << msg
+#else
+# define DEBUG6(msg)
+#endif
+// }}}
+
+// {{{ DEBUG_MODE <= 7
+#if DEBUG_MODE <= 7
+# define DEBUG7(msg)	std::cerr << "DEBUG7|" << DEBUG_LOCATION << msg
+#else
+# define DEBUG7(msg)
+#endif
+// }}}
+
+// {{{ DEBUG_MODE <= 8
+#if DEBUG_MODE <= 8
+# define DEBUG8(msg)	std::cerr << "DEBUG8|" << DEBUG_LOCATION << msg
+#else
+# define DEBUG8(msg)
+#endif
+// }}}
+
+// {{{ DEBUG_MODE <= 9
+#if DEBUG_MODE <= 9
+# define DEBUG9(msg)	std::cerr << "DEBUG9|" << DEBUG_LOCATION << msg
+#else
+# define DEBUG9(msg)
+#endif
+// }}}
+
+// {{{ DEBUG_MODE <= 99
+#if DEBUG_MODE <= 99
+# define TODO(msg)	std::cerr << "TODO!!|" << DEBUG_LOCATION << msg
+#else
+# define TODO(msg)
+#endif
+// }}}
+
+
+/* }}} Debugging */

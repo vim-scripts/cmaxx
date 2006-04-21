@@ -1,0 +1,19 @@
+const char* pname = strrchr(argv[0], '/');
+if (pname == NULL)
+	pname = strrchr(argv[0], '\\');
+else
+	pname++;
+if (pname == NULL)
+	pname = argv[0];
+else
+	pname++;
+
+int c;
+while ( (c = getopt(argc, argv, "@CURSOR@")) != -1 )
+{
+	switch (c)
+	{
+		default:
+			break;
+	}
+}

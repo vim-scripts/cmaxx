@@ -1,0 +1,58 @@
+\documentclass[11pt,german,a4,doubleside]{article}
+\pagestyle{headings}
+
+\usepackage{latexsym}
+\usepackage{german}
+\usepackage{hyperref}
+\usepackage{graphicx}
+%\def\angle{0}
+\usepackage{subfigure}
+\usepackage{makeidx}
+
+\makeindex
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Document:
+\begin{document}
+
+
+\title {@TITLE@}
+\date{\today}
+\author {@AUTHOR@}
+
+\maketitle
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Abstract:
+\begin{abstract} % {{{
+
+@CURSOR@
+
+\end{abstract} % }}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Einleitung:
+\section{Einleitung} % {{{
+\label{sec:einleitung}
+
+% }}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Bibliography:
+%\bibliographystyle{plain}
+\bibliographystyle{alpha}
+%\bibliography{}
+
+
+%\printindex
+
+
+\end{document}
+
+
+% vim:tw=78

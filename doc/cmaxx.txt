@@ -1,0 +1,445 @@
+*cmaxx.txt*                 CMAxx Template Plugin     Last Change: 31 Mar 2006
+
+
+                                                                       *cmaxx*
+                            CMAxx Template Plugin
+                                Version 1.0.0
+
+                          Markus (MAxx) Trenkwalder
+                      markus (at) trenkwalder (dot) name
+
+
+------------------------------------------------------------------------------
+Content                                                        *cmaxx-content*
+
+             1.  Introduction ................. |cmaxx-intro|
+             2.  Installation ................. |cmaxx-install|
+             3.  History ...................... |cmaxx-history|
+             4.  Function ..................... |cmaxx-function|
+             5.  Command Reference ............ |cmaxx-commands|
+             6.  Macros ....................... |cmaxx-macros|
+             7.  Variable Reference ........... |cmaxx-variables|
+             8.  Collaboration Diagram ........ |cmaxx-collab|
+             9.  Known Issues ................. |cmaxx-issues|
+             10. TODOs ........................ |cmaxx-todos|
+
+
+------------------------------------------------------------------------------
+1. Introduction                                                  *cmaxx-intro*
+
+This script along with its  increasing collection of templates  is intended to
+help writing text.   You can  define templates which  will be expanded  at the
+position of the cursor.  Additionally templates can use macros which expand to
+either pre-defined or user-defined texts.  Templates are defined in text files
+and can be related to  a filetype (see |filetype-folder|).   New templates can
+be used immediately without  restarting the script  (which in fact  was one of
+the design goals).
+
+Using the  template is easy.  In insert mode you just have to type the name of
+the template and expand it by  pressing an expansion key.   The word under the
+cursor   is   then   replaced   by   the    content   of    the   macro   (see
+|template-expansion|).   The  default  setting  for  this  key  is  <F6>  (see
+|i_<F6>|).  In  normal mode  (|n_<F6>|) the  usage is  similar, press  <F6> to
+expand the  word  under  the  cursor  with the  template  of  that  name  (see
+|template-filename|).   In  visual  mode  (|v_<F6>|)   the  behaviour  of  the
+expansion is different.  The  selection is not taken as  the template name but
+pasted at  the  cursor position  after  the  expansion of  the  template  (see
+|cursor|).  This can  be used for  example to enclose  the selected text  by a
+HTML tag.
+
+A template is a text  file where the basename  (without the extension) defines
+the name of the template.  Templates must  have the extension ".tmpl".  It can
+contain any text you want.  But strings enclosed between a delimiter character
+(defined by the  variable |g:CMAxx_Delimiter|) are  special texts.   These are
+the before mentioned |macros|.  Macros are  texts replaced during the template
+expansion.  The replacement  text is either pre-defined  or must be  put in by
+the user.
+
+
+------------------------------------------------------------------------------
+2. Installation                                                *cmaxx-install*
+
+The best way to add this script to vim is to put it in the plugin directory in
+the  user's   vim  folder   (for  Unix/Linux:   ~/.vim/plugin;   for  Windows:
+~/vimfiles/plugin, for more inforation see |.vimrc|).  Then the script will be
+sourced automatically at the startup.
+
+The script  relies  on a  folder  where the  defined  templates reside.    The
+location of this folder is defined in the variable 'g:CMAxx_TemplateDir'.  The
+script does not  define a default  path so  it does not  work if  the variable
+is not set.  A possible location would be ~/.vim/templates.
+
+The script comes with a  number of templates in the  "templates" folder.  Move
+this folder to your  preferred location and set  'g:CMAxx_TemplateDir' to this
+path.  The  folder "templates" should  be part  of this path.   A  good choice
+would be local scripts folder.
+
+
+------------------------------------------------------------------------------
+3. History                                                     *cmaxx-history*
+
+This script has its  roots in the  code template function  of Borlands Delphi.
+In the early days  of my programming career  I found this aid  very useful and
+finally tried to implement it for my beloved  vim.  The script grew during its
+usage in the  period of two  years and during  this time several  features far
+beyond the possibilities of the Delphi tool where added.
+
+At the beginning of the year 2006 the script  reached a status where I felt it
+to be ready to be  given away to others.   It entered a  phase of refactoring,
+which included the correction of most of the  known issues and the creation of
+some basic help for the script.
+
+
+------------------------------------------------------------------------------
+4. Function                                                   *cmaxx-function*
+
+                         *template-filename* *filetype-folder* *before-folder*
+After the installation the script should be ready  to use.  It defines several
+key mappings (see |cmaxx-commands|).  The most important  one is <F6>.  It can
+be used in insert mode as well as in normal and visual mode.  By pressing <F6>
+the word under  the cursor is  taken as  the template name  and a  file called
+"<template name>.tmpl" is searched in  the template folder in  such a way that
+the script first looks  for it in  a subfolder called  "before".  If  it isn't
+found there the  script searches a  folder named after  the type of  the file.
+For example, if you are editing a c++  file, the scripts searches the template
+in a  folder called  "cpp" (according  to its  |filetype|).   If the  template
+cannot be found there, the template is searched in the main template folder.
+                                                          *template-expansion*
+If the template  is found, it's  content is read  and inserted instead  of the
+template name.  For templates  containing more than one  line, the text before
+the template name is  taken to calculate an  indent for the rest  of the lines
+and the text after the template  name is added at the end  of the last line of
+the template.    Normally  the  text  before  the  template  is  converted  to
+whitespaces for all lines but  the first.  This behaviour  can be changed with
+the |g:CMAxx_ConvertPrefix| variable.
+                                                                      *macros*
+It is also possible to  include |smaxx-macros| in the  template.  These macros
+are enclosed  by a  character  defined by  |g:CMAxx_Delimiter|.   The  default
+setting is "@".  Such a  macro may for example be "AMACRO".   In this case the
+script asks for a value for  this macro.  Every occurrence  of this macro will
+then be  replaced  by the  entered  value.   It  is  also possible  to  define
+variables for these  macros (see |macro-variables|).   The variable  must have
+the name of the macro (ie. the part between  the "@") and has to be defined as
+a global variable (ie. by using "g:").
+
+             *predefined-macros* *author* *date* *filename* *filedef* *cursor*
+There exist some special macros also listed in |special-macros|.  The |AUTHOR|
+macro will be  replaced by the  value of  the variable |g:CMAxx_Author|.   The
+|CURSOR| macro should be  used only once  and will be  used to set  the cursor
+instead.  This is  especially useful when working  in insert mode.   In visual
+mode the selected text will be pasted at that position.  The |DATE| macro will
+be replaced by the actual  date, the |FILENAME| macro will  be replaced by the
+file wherein the template is expanded and  finally the |FILEDEF| macro will be
+replaced by something used  as include guard's in  c header files  (i.e. for a
+file called "file.h" it will be expanded to "__FILE_H__").
+
+                                             *mappings* *funcname* *classname*
+Several other  key mappings  are defined  for the  normal mode.   The  mapping
+|<leader>_f| expands the actual line with the  "func.tmpl" template.  The text
+line is used  for the |FUNCNAME|  macro.  This  template is normally  used for
+C/C++-functions.  The |<leader>_c|  mapping expands the current  line with the
+"class.tmpl" template where the text  line is used for  the |CLASSNAME| macro.
+This is  a  template used  for  classes.   The  |<leader>_h|  mapping  expands
+"header.tmpl" at the current cursor position.   The |<leader>_F| macro expands
+"file.tmpl" at the beginning of  the file.  It  is meant to be  a doxygen file
+documentation.  |<leader>_v| adds "vim.tmpl" at the very  end of the file.  It
+should be a vim scan line.  And finally |<leader>_s| shows the actual settings
+in a  new  buffer.    These  special macros  except  the  |CURSOR|  macro  are
+substituted before all other macros,  so defining a variable  for these macros
+has no effect.
+                                               *cmaxxrc* *.cmaxxrc* *_cmaxxrc*
+There is a  last feature to  be described.   The script  tries to read  a file
+called ".cmaxxrc" in the  actual working directory.   In this  file the values
+for the user-defined  variables my be  redefined.   In this way  templates and
+settings local to a special project  can be defined.  This  file can easily be
+written from the settings buffer (see above).
+                                                            *template-folders*
+A last  word on  the two  different template  folders: the  folder defined  by
+|g:CMAxx_TemplateDir| is intended  to hold  templates common  to all  projects
+whereas the folder defined  by |b:CMAxx_LocalTemplates| should  hold templates
+used only in this special project.
+
+
+------------------------------------------------------------------------------
+5. Command Reference                                          *cmaxx-commands*
+
+This script defines the following shortcuts:
+
+                                                      *<F6>* *i_<F6>* *n_<F6>*
+<F6>		This mapping is defined  for all three modes.  In normal- and
+                input-mode  the word  under the cursor  is  interpreted as  a
+                template name.  The template  is then  expanded, if it can be
+		found.
+                                                                      *v_<F6>*
+<F6>            In visual-mode  the user  is asked for  a template name.  This
+                template -- if found -- is  than expanded. If the template has
+                the "@CURSOR@"  macro defined,  the selection  is inserted  at
+                this position.  This is useful  for  example  to convert  some
+                lines of text into a doxygen comment.
+
+The following mappings are defined only in normal mode:
+
+                                                                  *<leader>_c*
+<leader>c	Interprets the  current line  as a class  name and  expands it
+		with "class.tmpl".
+
+                                                                  *<leader>_d*
+<leader>d	Adds  a doxygen comment block  at the current  position  using
+		"dox.tmpl".
+
+                                                                  *<leader>_f*
+<leader>f	Interprets the current line  as a function head and expands it
+		with "func.tmpl".
+
+                                                                  *<leader>_F*
+<leader>F	Adds a  doxygen  file  documentation  at the top  of  the file
+                (using "file.tmpl").
+
+                                                                  *<leader>_h*
+<leader>h	Adds include guards  at the current position  (using  template
+		"header.tmpl").
+
+                                                                  *<leader>_l*
+<leader>l	Lists all currently available templates.
+
+                                                                  *<leader>_s*
+<leader>s	This mapping opens a buffer  with the current script settings.
+		They can be edited and also be written to a file.  By pressing
+		's' in this buffer the current values will be activated.
+
+                                                                  *<leader>_v*
+<leader>v	Adds  a  vim  scanline  to  the  bottom  of  the  file  (using
+		"vim.tmpl").
+
+
+------------------------------------------------------------------------------
+7. Macros                                                       *cmaxx-macros*
+
+Macros  are  special  strings  in  templates.     They  are  placeholders  for
+pre-defined texts or texts entered  by the user.  A  macro is enclosed between
+a character defined by  the |g:CMAxx_Delimiter|.   The common form  of a macro
+is (here the default setting is used for the delimiter): >
+
+			@<name>[:<command>:<text>]@
+<
+<name> is  the name  of the  macro.   Macros  have the  possibility to  define
+commands executed  on the  replaced  text.   This will  be  desribed later  in
+|macro-commands|.  The definition  of a command  has two parts  separated by a
+colon.  If a command is  defined, both parts have to  be applied.  The command
+can be omitted.
+                                                                 *macro-names*
+At the moment there does not exist a restriction regarding the macro name.
+But while using the script it showed to be good practice to use upper case
+letters to easyer distinct macros from other text.  The name is also used for
+the name of the macro variable (see |macro-variables|).  The variables value
+is used as a pre-defined substitute for the macro.
+                                                              *macro-commands*
+Macros can define  post-processing commands.   At  the moment  three different
+commands are defined (the following descriptions  will use the macro "MYMACRO"
+and the substitution text "my text"):
+
+                                                                   *p-command*
+p	Prepends the  string defined  in <text>  to the substituted text.  For
+	example the macro >
+			@MYMACRO:p:Prepend this text to @
+<	will be expanded to >
+			Prepend this text to my text
+<
+                                                                   *a-command*
+a	Appends the  string defined  in <text>  to the  substituted text.  The
+	macro >
+			@MYMACRO:a: is followed by this text.@
+<	will be expanded to >
+			my text is followed by this text.
+<
+                                                                   *r-command*
+r	The string defined in <text> is interpreted as a substitution command.
+	At the  moment only  the "s///" command is  supported, where the first
+	part  defines the  regular expression  and the second  the substitute.
+	The script  interprets  this  command  and  after  that  executes  the
+	|substitute()|  function.   The options  to the  command are  directly
+	given to the function.  Example: >
+			@MYMACRO:r:s/my/Your/g@
+<	will be expanded to >
+				Your text
+<
+                                                              *special-macros*
+The script knows of some special macros.   These macros either use pre-defined
+variables or interpret the text under the cursor in a special way.
+
+                                                                      *AUTHOR*
+AUTHOR		The value of the |b:CMAxx_Author| variable will be used as the
+		substitution text.
+
+                                                                   *CLASSNAME*
+CLASSNAME	This  macro is  expanded  using  an internal  variable.   This
+		variable is set only when using the |<leader>_c| mapping.
+
+                                                                      *CURSOR*
+CURSOR		This macro is used to position the cursor in the template.  It
+		will be replaced by an empty string.   For example if you want
+		to  edit a  HTML  document  the  macro  for a tag  could  look
+		like this (let the name be "div"): >
+				<div>
+					@CURSOR@
+				</div>
+<		You may now use  the template in your  HTML document like this
+		(before expansion, "|" specifies the cursor position): >
+				...
+				<body>
+					div|
+				</body>
+				...
+<		If you now press  the expansion key <F6>  the situation  after
+		the expansion looks like this: >
+				...
+				<body>
+					<div>
+						|
+					</div>
+				</body>
+				...
+<
+                                                                        *DATE*
+DATE		Is expanded to the actual date and time.
+
+                                                                     *FILEDEF*
+FILEDEF		Is expanded  to something  that can be used  as include guard.
+		For this the filename  is converted to  upper case characters,
+		dots  are replaced  by the underline  character ("_")  and the
+		string  is  prepended  and  appended  by two  extra  underline
+		characters ("__").  For example the filename >
+				file.h
+<		will be expanded to >
+				__FILE_H__
+<
+                                                                    *FILENAME*
+FILENAME	Is expanded to the filename of the current buffer.
+
+                                                                    *FUNCNAME*
+FUNCNAME	This  macro  is expanded  using an  internal  variable.   This
+		variable is set only when using the |<leader>_f| mapping.
+
+
+------------------------------------------------------------------------------
+6. Variables                                                 *cmaxx-variables*
+
+The behaviour of the script can be influenced by the following variables:
+
+                                                              *b:CMAxx_Author*
+b:CMAxx_Author		string (default "")
+			This variable is used in the |AUTHOR| macro.
+
+                                                       *b:CMAxx_ConvertPrefix*
+b:CMAxx_ConvertPrefix	0/1 (default 1)
+			If set to 0 the prefix (the string from the line start
+			to the  beginning of  the macro)  is prepended  to all
+			lines of  the expanded  template.  In any  other  case
+			this string  is used  only for  the first  line.   For
+			every  other  line the  characters  are  converted  to
+			spaces.
+
+                                                           *g:CMAxx_Delimiter*
+g:CMAxx_Delimiter	character (default '@')
+			This is the most  important and most  subtle variable.
+			It defines the  character which  encloses macros.   If
+			this variable  is changed,  all templates  have to  be
+			changed too.   If the  wrong  character  is used,  the
+			risk of making macros unusable is high.
+
+                                                      *b:CMAxx_LocalTemplates*
+b:CMAxx_LocalTemplates	string (default ".")
+			Defines a  folder where  the template  for the  actual
+			buffer can  be found.   In this  way project  specific
+			templates can be used.
+
+                                                         *g:CMAxx_TemplateDir*
+g:CMAxx_TemplateDir	string (default
+				UNIX:		$HOME/.vim/templates,
+				WINDOWS:	$HOME\\vimfiles\\templates)
+			This variable defines where  the global template files
+			can  be  found.   This  folder  contains  the  general
+			templates, the before folder and the filetype folders.
+
+                                                             *b:CMAxx_Version*
+b:CMAxx_Version		string (default "1.0.0")
+			This variable is used by the |VERSION| macro.
+
+                                                             *macro-variables*
+The replacement text for a macro  may also be predefined. This  is done by the
+macro variables.  They  have to be defined  globally and their name  has to be
+the name of the macro.  If you want to define the text for the macro >
+
+				@MYMACRO@
+<
+you have to set the variable like this: >
+
+		:let g:MYMACRO="Replacement text for macro MYMACRO"
+<
+When expanding a template containing this macro the value of the variable will
+be used to replace the macro.
+
+
+------------------------------------------------------------------------------
+7. Collaboration Diagram                                        *cmaxx-collab*
+
+
+This "diagram" shows the function  collaboration in the script.   This diagram
+was mainly created to help the author understand his code ;)
+>
+
+  CMAxx_expandTemplate   CMAxx_expandSelection   CMAxx_expandFunction
+       |                           |                     |   |
+       +---------------+   +-------+                     |   |
+                       |   |   +-------------------------+   |
+                       |   |   |                             |
+                       V   V   V                             +-------------+
+                     CMAxx_doExpand                                        |
+                     | |  | | | | |                                        |
+          +----------+ |  | | | | +-------------------------------------+  |
+          |            |  | | | +------------------------------+        |  |
+          V            |  | | +-----------------------+        |        |  |
+  CMAxx_Substitute     |  | +----------------+        |        V        |  |
+       |   |           |  +-------+          |        |  CMAxx_strpart  |  |
+       |   |           V          |          |        |        |        |  |
+       |   |  CMAxx_findMacroName |          |        |        +--+     |  |
+       |   |           |          |          |        V           |     |  |
+       |   +--+    +---+          |          |  CMAxx_Substitute  |     |  |
+       |      |    |              |          V                    V     V  V
+       |      |    |              |    CMAxx_findFile            CMAxx_escape
+       |      V    V              V          |
+       |  CMAxx_findMacro  CMAxx_setCursor   |
+       |                                     V
+       +--+                           CMAxx_doFindFile
+          |
+          V
+   CMAxx_substMacro
+          |
+          V
+  CMAxx_substSpecial
+
+
+                                CMAxx_ShowSettings
+
+
+                                 CMAxx_listFile
+                                       |
+                                       V
+                                CMAxx_doListFiles
+<
+
+------------------------------------------------------------------------------
+8. Known Issues                                                 *cmaxx-issues*
+
+- If the selection ends at the beforelast column,  the template is expanded at
+  the wrong place (ie. after the last character).
+
+
+------------------------------------------------------------------------------
+9. TODOs                                                         *cmaxx-todos*
+
+- Add a syntax script for the template files.
+
+
+------------------------------------------------------------------------------
+vim:tw=78:noet:wrap:ts=8:ft=help:norl:sts=8:et
