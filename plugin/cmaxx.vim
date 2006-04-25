@@ -1,12 +1,12 @@
 "
 "  Maintainer: Markus (MAxx) Trenkwalder
-"     Version: 1.0.0
+"     Version: 1.0.1
 "     Summary: Provides a collection of macros and functions for programming
 "              C/C++
-" Last Change: $Date: 2006/04/21 11:41:10 $
-" Revision:    $Revision: 1.37 $
+" Last Change: $Date: 2006/04/25 11:10:56 $
+" Revision:    $Revision: 1.40 $
 "
-" $Id: cmaxx.vim,v 1.37 2006/04/21 11:41:10 maxx Exp $
+" $Id: cmaxx.vim,v 1.40 2006/04/25 11:10:56 maxx Exp $
 
 
 " ===========================================================================
@@ -31,6 +31,7 @@
 "   -> This inplies that the script knows about all existing templates.
 " - The possibility of comments in the templates.
 "   -> A possible comment character could be a double "b:CMAxx_Delimiter".
+" - A selection of some default values for a macro.
 " }}}
 "
 "
@@ -140,6 +141,7 @@
 "      VimEnter	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	done 060206
 " x Document the macro value variables.	.	.	.	.	.	.	.	.	.	.	.	.	done 060416
 " - Add a syntax script for the template files.
+" - Support Vim 6.x again.
 " }}}
 "
 "
@@ -206,20 +208,10 @@
 "										Other changes:
 "										- Added a version check (this script works for vim-7.0aa
 "										  and higher only.
-"
+" 1.0.1 25.04.2006	Other changes:
+"										- Made it work with 6.x again.
 " }}}
 "
-" }}}
-
-
-" ===========================================================================
-" Version Check:
-" ===========================================================================
-" {{{
-if v:version < 700
-	echo "This script needs version 7.0aa or higher."
-	finish
-endif
 " }}}
 
 
@@ -916,19 +908,20 @@ endfun
 " {{{ CMAxx_ShowSettings()
 fun! CMAxx_ShowSettings()
 	let zbak = @z
-	let @z = ""
-\."\" Script: cmaxx $Revision: 1.37 $"
+	if v:version > 700
+		let @z = ""
+\."\" Script: cmaxx $Revision: 1.40 $"
 \."\n\" Current Directory: ".expand('%:p:h')
 \."\n\" CMAxx's Variables Are:"
 \."\n\"let b:CMAxx_LocalTemplates  = \'".b:CMAxx_LocalTemplates."\'"
-	if s:CMAxx_TemplateDirNotSet == 1
-		let @z .= ""
+		if s:CMAxx_TemplateDirNotSet == 1
+			let @z .= ""
 \."\nlet g:CMAxx_TemplateDir     = \'".g:CMAxx_TemplateDir."\'"
-	else
-		let @z .= ""
+		else
+			let @z .= ""
 \."\n\"let g:CMAxx_TemplateDir     = \'".g:CMAxx_TemplateDir."\'"
-	endif
-	let @z .= ""
+		endif
+		let @z .= ""
 \."\nlet b:CMAxx_Author          = \'".b:CMAxx_Author."\'"
 \."\nlet b:CMAxx_Version         = \'".b:CMAxx_Version."\'"
 \."\nlet b:CMAxx_ConvertPrefix   = \'".b:CMAxx_ConvertPrefix  ."\'"
@@ -937,6 +930,22 @@ fun! CMAxx_ShowSettings()
 \."\n\" settings. To execute a line either double click it or press Shift-Enter."
 \."\n\" To close the buffer type 'q' or use ':bd'. To save this settings to"
 \."\n\" cmaxx.vim press 's'."
+	else
+		let @z = ""
+\."\" Script: cmaxx $Revision: 1.40 $"
+\."\n\" Current Directory: ".expand('%:p:h')
+\."\n\" CMAxx's Variables Are:"
+\."\n\"let b:CMAxx_LocalTemplates  = \'".b:CMAxx_LocalTemplates."\'"
+\."\n\"let g:CMAxx_TemplateDir     = \'".g:CMAxx_TemplateDir."\'"
+\."\nlet b:CMAxx_Author          = \'".b:CMAxx_Author."\'"
+\."\nlet b:CMAxx_Version         = \'".b:CMAxx_Version."\'"
+\."\nlet b:CMAxx_ConvertPrefix   = \'".b:CMAxx_ConvertPrefix  ."\'"
+\."\n\n\" --------------------------------------"
+\."\n\" Change above values to your needs and execute the line to activate your"
+\."\n\" settings. To execute a line either double click it or press Shift-Enter."
+\."\n\" To close the buffer type 'q' or use ':bd'. To save this settings to"
+\."\n\" cmaxx.vim press 's'."
+	endif
 	new
 	normal "zP
 	let @z = zbak

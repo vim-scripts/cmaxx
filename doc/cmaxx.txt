@@ -3,7 +3,7 @@
 
                                                                        *cmaxx*
                             CMAxx Template Plugin
-                                Version 1.0.0
+                                Version 1.0.1
 
                           Markus (MAxx) Trenkwalder
                       markus (at) trenkwalder (dot) name
