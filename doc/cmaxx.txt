@@ -3,7 +3,7 @@
 
                                                                        *cmaxx*
                             CMAxx Template Plugin
-                                Version 1.0.1
+                                Version 1.0.2
 
                           Markus (MAxx) Trenkwalder
                       markus (at) trenkwalder (dot) name
@@ -21,7 +21,8 @@ Content                                                        *cmaxx-content*
              7.  Variable Reference ........... |cmaxx-variables|
              8.  Collaboration Diagram ........ |cmaxx-collab|
              9.  Known Issues ................. |cmaxx-issues|
-             10. TODOs ........................ |cmaxx-todos|
+             10. Feature Requests ............. |cmaxx-requests|
+             11. TODOs ........................ |cmaxx-todos|
 
 
 ------------------------------------------------------------------------------
@@ -73,6 +74,11 @@ The script comes with a  number of templates in the  "templates" folder.  Move
 this folder to your  preferred location and set  'g:CMAxx_TemplateDir' to this
 path.  The  folder "templates" should  be part  of this path.   A  good choice
 would be local scripts folder.
+
+The script will create some mappings.  These mappings can be turned off by two
+variables.  If the variable 'g:CMAxx_NoExpansionKey'  is defined, the mappings
+for |F6|, |i_F6| and |n_F6|  will not be created.   If 'g:CMAxx_NoMappings' is
+set, all the leader-mappings will not be set.
 
 
 ------------------------------------------------------------------------------
@@ -213,7 +219,7 @@ The following mappings are defined only in normal mode:
 
 
 ------------------------------------------------------------------------------
-7. Macros                                                       *cmaxx-macros*
+6. Macros                                                       *cmaxx-macros*
 
 Macros  are  special  strings  in  templates.     They  are  placeholders  for
 pre-defined texts or texts entered  by the user.  A  macro is enclosed between
@@ -322,7 +328,7 @@ FUNCNAME	This  macro  is expanded  using an  internal  variable.   This
 
 
 ------------------------------------------------------------------------------
-6. Variables                                                 *cmaxx-variables*
+7. Variables                                                 *cmaxx-variables*
 
 The behaviour of the script can be influenced by the following variables:
 
@@ -381,7 +387,7 @@ be used to replace the macro.
 
 
 ------------------------------------------------------------------------------
-7. Collaboration Diagram                                        *cmaxx-collab*
+8. Collaboration Diagram                                        *cmaxx-collab*
 
 
 This "diagram" shows the function  collaboration in the script.   This diagram
@@ -429,16 +435,45 @@ was mainly created to help the author understand his code ;)
 <
 
 ------------------------------------------------------------------------------
-8. Known Issues                                                 *cmaxx-issues*
+9. Known Issues                                                 *cmaxx-issues*
 
 - If the selection ends at the beforelast column,  the template is expanded at
   the wrong place (ie. after the last character).
 
 
 ------------------------------------------------------------------------------
-9. TODOs                                                         *cmaxx-todos*
+10. Feature Requests                                          *cmaxx-requests*
 
+Planned for the next version (1.1):
+- A selection of some default values for a macro.
+- A buffer simular to the one in bufexplorer for all known templates of the
+  current filetype.
+  -> CMAxx_listFiles() already creates such lists.
+
+Planed for version 1.2:
+- The possibility of comments in the templates.
+  -> A possible comment character could be a double "b:CMAxx_Delimiter".
 - Add a syntax script for the template files.
+
+Planed for version 1.3:
+- Indent calculation: take "tabstop" and "softtabstop" in account for
+  the calculation of indent in CMAxx_doExpand.
+- "Tab completion": in insert mode press <TAB> to complete to either a
+  reserved word, a template or a word previousely typed (like in <CTRL-N>)
+  -> This inplies that the script knows about all existing templates.
+
+Noted but not planed:
+- expandFunction only works in one line function definitions
+  -> This could be solved using a mapping for the visual mode.
+- function for scanning a function definition and adding doxygen comments
+  for all parameters and the return value
+  -> Possible solution: using a spezial "#ARGUMENT#" macro.
+
+
+------------------------------------------------------------------------------
+11. TODOs                                                        *cmaxx-todos*
+
+No todos at the moment.
 
 
 ------------------------------------------------------------------------------

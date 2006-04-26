@@ -1,12 +1,12 @@
 "
 "  Maintainer: Markus (MAxx) Trenkwalder
-"     Version: 1.0.1
+"     Version: 1.0.2
 "     Summary: Provides a collection of macros and functions for programming
 "              C/C++
-" Last Change: $Date: 2006/04/25 11:10:56 $
-" Revision:    $Revision: 1.40 $
+" Last Change: $Date: 2006/04/26 11:48:50 $
+" Revision:    $Revision: 1.50 $
 "
-" $Id: cmaxx.vim,v 1.40 2006/04/25 11:10:56 maxx Exp $
+" $Id: cmaxx.vim,v 1.50 2006/04/26 11:48:50 maxx Exp $
 
 
 " ===========================================================================
@@ -32,6 +32,7 @@
 " - The possibility of comments in the templates.
 "   -> A possible comment character could be a double "b:CMAxx_Delimiter".
 " - A selection of some default values for a macro.
+" - Add a syntax script for the template files.
 " }}}
 "
 "
@@ -67,6 +68,9 @@
 "      "p") prepend string.
 "   => Done! CMAxx_Substitute rewritten, CMAxx_substSpecial,
 "      CMAxx_findMacro and CMAxx_substSpecial added	.	.	.	.	.	.	.	.	.	060326
+" - Possibility to turn off the mappings.
+"   => Added two variables to turn them off: "g:CMAxx_NoExpansionKey" and
+"      "g:CMAxx_NoMappings".	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	060426
 " }}}
 "
 "
@@ -118,6 +122,16 @@
 "   be found.
 "   => This is because the buffer is created before the
 "      variables are used.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	fixed 060206
+" x In some cases the cursor substitute is not replaced (thanx
+"   to Igor Prischepoff).
+"   => Now the cursor is set to the begining of the search ares
+"      before starting the search.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	fixed 060426
+" x When b:CMAxx_ConvertPrefix is not set, the local variable
+"   inent is not set too.
+"   => Fixed by checking the existence of this variable.	.	.	.	fixed 060426
+" x The same as with b:CMAxx_ConvertPrefix may have happend with
+"   b:CMAxx_Author and b:CMAxx_Version.
+"   => Fixed by checking the existance of the variable first.	.	fixed 060426
 " }}}
 "
 "
@@ -140,8 +154,7 @@
 "      bound and adding event handlers for BufRead, BufNew and
 "      VimEnter	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	done 060206
 " x Document the macro value variables.	.	.	.	.	.	.	.	.	.	.	.	.	done 060416
-" - Add a syntax script for the template files.
-" - Support Vim 6.x again.
+" x Support Vim 6.x again.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	done 060425
 " }}}
 "
 "
@@ -210,6 +223,21 @@
 "										  and higher only.
 " 1.0.1 25.04.2006	Other changes:
 "										- Made it work with 6.x again.
+" 1.0.2 26.04.2006	Fixed bugs:
+"										- Corrected the usage or the "search()" function by
+"										  setting the cursor first to the begin of the search.
+"										- When "b:CMAxx_ConvertPrefix" is not set, the local
+"										  variable "indent" is not set too.
+"										- Fixed the same issue as with "b:CMAxx_ConvertPrefix"
+"										  for "b:CMAxx_Author" and "b:CMAxx_Version" too.
+"										Other changes:
+"										- "b:CMAxx_ConvertPrefix" is now set if it could not be
+"										  found.
+"										- Corrected the settings buffer content.
+"										New features:
+"										- Two variables "g:CMAxx_NoExpansionKey" and
+"										  "g:CMAxx_NoMappings" now controll the creation of the
+"										  default mappings.
 " }}}
 "
 " }}}
@@ -219,9 +247,9 @@
 " Settings:
 " ===========================================================================
 au BufRead,BufNew,VimEnter	*
-	\ let b:CMAxx_Author         = "MAxx Headroom"
+	\ let b:CMAxx_Author         = ""
 au BufRead,BufNew,VimEnter	*
-	\ let b:CMAxx_Version        = "1.0.0"
+	\ let b:CMAxx_Version        = "0.0.0"
 au BufRead,BufNew,VimEnter	*
 	\ let b:CMAxx_LocalTemplates = "."
 au BufRead,BufNew,VimEnter	*
@@ -234,39 +262,38 @@ let g:CMAxx_Delimiter          = "@"
 " Mappings:
 " ===========================================================================
 " {{{
+if !exists("g:CMAxx_NoExpansionKey")
+	" Insert Template:
+	vnoremap <F6> :<C-U>call CMAxx_expandSelection()<cr>
+	nmap <F6> :call CMAxx_expandTemplate()<cr>
+	imap <F6> <esc>:call CMAxx_expandTemplate(1)<cr>
+endif
 
+if !exists("g:CMAxx_NoMappings")
+	" Function:
+	nmap <leader>f :call CMAxx_expandFunction('func')<cr>
 
-" Insert Template:
-vnoremap <F6> :<C-U>call CMAxx_expandSelection()<cr>
-nmap <F6> :call CMAxx_expandTemplate()<cr>
-imap <F6> <esc>:call CMAxx_expandTemplate(1)<cr>
+	" Class:
+	nmap <leader>c :call CMAxx_expandFunction('class')<cr>
 
-" Function:
-nmap <leader>f :call CMAxx_expandFunction('func')<cr>
+	" Header:
+	nmap <leader>h :call CMAxx_doExpand('header')<cr>
 
-" Class:
-nmap <leader>c :call CMAxx_expandFunction('class')<cr>
+	" File Documentation:
+	nmap <leader>F ggO<esc>:call CMAxx_doExpand('file')<cr>
 
-" Header:
-nmap <leader>h :call CMAxx_doExpand('header')<cr>
+	" Vim Scanline:
+	nmap <leader>v Go<esc>:call CMAxx_doExpand('vim')<cr>
 
-" File Documentation:
-nmap <leader>F ggO<esc>:call CMAxx_doExpand('file')<cr>
+	" Doxygen Documentation:
+	vnoremap <leader>d :<C-U>call CMAxx_expandSelection("dox")<cr>
 
-" Vim Scanline:
-nmap <leader>v Go<esc>:call CMAxx_doExpand('vim')<cr>
+	" Settings:
+	nmap <leader>s :call CMAxx_ShowSettings()<cr>
 
-" Doxygen Documentation:
-vnoremap <leader>d :<C-U>call CMAxx_expandSelection("dox")<cr>
-
-" Settings:
-nmap <leader>s :call CMAxx_ShowSettings()<cr>
-
-" List Templates:
-nmap <leader>l :call CMAxx_listFiles()<cr>
-
-
-
+	" List Templates:
+	nmap <leader>l :call CMAxx_listFiles()<cr>
+endif
 " }}}
 
 
@@ -406,6 +433,9 @@ endfun
 " Return:    The line number of the first match.
 " {{{ CMAxx_findMacro( smacro, ... )
 fun! CMAxx_findMacro( smacro, ... )
+	if a:0 > 0
+		call cursor(a:1, 0)
+	endif
 	let line = search(a:smacro)
 	let s:macro_name = substitute(getline(line), '.*'.a:smacro.'.*', "\\1", "")
 	if line == 0
@@ -529,6 +559,7 @@ endfun
 "            macro.
 " {{{ CMAxx_setCursor ( strt, stp )
 fun! CMAxx_setCursor ( strt, stp, pos )
+	call cursor(a:strt, 0)
 	let foundl = search(s:CMAxx_CURSORSubstitute)
 	if a:strt <= foundl && foundl <= a:stp
 		let foundc = match(getline(foundl), s:CMAxx_CURSORSubstitute)
@@ -679,10 +710,13 @@ fun! CMAxx_doExpand( arg, ... )
 			let last = CMAxx_strpart(line, x-1, linelen)
 		endif
 	endif
-	if b:CMAxx_ConvertPrefix != 0 && strlen(first)
-		let indent = substitute(first, '\S', ' ', 'g')
+	let indent = first
+	if exists("b:CMAxx_ConvertPrefix")
+		if b:CMAxx_ConvertPrefix != 0 && strlen(first)
+			let indent = substitute(first, '\S', ' ', 'g')
+		endif
 	else
-		let indent = first
+		let b:CMAxx_ConvertPrefix = 1
 	endif
 	let length = line('$')
 	if length == 1
@@ -713,7 +747,12 @@ fun! CMAxx_doExpand( arg, ... )
 	" Substitute known macros:
 	" First we have to substitute the #CURSOR# macro:
 	call CMAxx_Substitute(pstart, pend, 'CURSOR', s:CMAxx_CURSORSubstitute)
-	call CMAxx_Substitute(pstart, pend, 'AUTHOR', b:CMAxx_Author)
+	if CMAxx_findMacroName('AUTHOR', pstart, pend) != ''
+		if !exists("b:CMAxx_Author") || strlen(s:CMAxx_Author) == 0
+			let b:CMAxx_Author = input('Author Name: ')
+		endif
+		call CMAxx_Substitute(pstart, pend, 'AUTHOR', b:CMAxx_Author)
+	endif
 	if strlen(s:CMAxx_Function) == 0 &&
 	   \ CMAxx_findMacroName('FUNCTION', pstart, pend) != ''
 		let s:CMAxx_Function = input('Function name: ')
@@ -727,11 +766,12 @@ fun! CMAxx_doExpand( arg, ... )
 	call CMAxx_Substitute(pstart, pend, 'CLASSNAME', s:CMAxx_Function)
 	call CMAxx_Substitute(pstart, pend, 'DATE', strftime("%d. %b %Y, %X"))
 	" TODO: change this.
-	if strlen(b:CMAxx_Version) == 0 && 
-			\ CMAxx_findMacroName('VERSION', pstart, pend) != ''
-		let b:CMAxx_Version = input "Version: "
+	if CMAxx_findMacroName('VERSION', pstart, pend) != ''
+		if !exists("b:CMAxx_Version") ||strlen(b:CMAxx_Version) == 0 && 
+			let b:CMAxx_Version = input "Version: "
+		endif
+		call CMAxx_Substitute(pstart, pend, 'VERSION', b:CMAxx_Version)
 	endif
-	call CMAxx_Substitute(pstart, pend, 'VERSION', b:CMAxx_Version)
 	let thefile = expand("%:t")
 	if strlen(thefile) != 0
 		call CMAxx_Substitute(pstart, pend, 'FILENAME', thefile)
@@ -910,7 +950,7 @@ fun! CMAxx_ShowSettings()
 	let zbak = @z
 	if v:version > 700
 		let @z = ""
-\."\" Script: cmaxx $Revision: 1.40 $"
+\."\" Script: cmaxx $Revision: 1.50 $"
 \."\n\" Current Directory: ".expand('%:p:h')
 \."\n\" CMAxx's Variables Are:"
 \."\n\"let b:CMAxx_LocalTemplates  = \'".b:CMAxx_LocalTemplates."\'"
@@ -924,27 +964,27 @@ fun! CMAxx_ShowSettings()
 		let @z .= ""
 \."\nlet b:CMAxx_Author          = \'".b:CMAxx_Author."\'"
 \."\nlet b:CMAxx_Version         = \'".b:CMAxx_Version."\'"
-\."\nlet b:CMAxx_ConvertPrefix   = \'".b:CMAxx_ConvertPrefix  ."\'"
+\."\nlet b:CMAxx_ConvertPrefix   = ".b:CMAxx_ConvertPrefix
 \."\n\n\" --------------------------------------"
 \."\n\" Change above values to your needs and execute the line to activate your"
 \."\n\" settings. To execute a line either double click it or press Shift-Enter."
 \."\n\" To close the buffer type 'q' or use ':bd'. To save this settings to"
-\."\n\" cmaxx.vim press 's'."
+\."\n\" ./.cmaxxrc press 's'."
 	else
 		let @z = ""
-\."\" Script: cmaxx $Revision: 1.40 $"
+\."\" Script: cmaxx $Revision: 1.50 $"
 \."\n\" Current Directory: ".expand('%:p:h')
 \."\n\" CMAxx's Variables Are:"
 \."\n\"let b:CMAxx_LocalTemplates  = \'".b:CMAxx_LocalTemplates."\'"
 \."\n\"let g:CMAxx_TemplateDir     = \'".g:CMAxx_TemplateDir."\'"
 \."\nlet b:CMAxx_Author          = \'".b:CMAxx_Author."\'"
 \."\nlet b:CMAxx_Version         = \'".b:CMAxx_Version."\'"
-\."\nlet b:CMAxx_ConvertPrefix   = \'".b:CMAxx_ConvertPrefix  ."\'"
+\."\nlet b:CMAxx_ConvertPrefix   = ".b:CMAxx_ConvertPrefix
 \."\n\n\" --------------------------------------"
 \."\n\" Change above values to your needs and execute the line to activate your"
 \."\n\" settings. To execute a line either double click it or press Shift-Enter."
 \."\n\" To close the buffer type 'q' or use ':bd'. To save this settings to"
-\."\n\" cmaxx.vim press 's'."
+\."\n\" ./.cmaxxrc press 's'."
 	endif
 	new
 	normal "zP
