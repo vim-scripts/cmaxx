@@ -3,10 +3,10 @@
 "     Version: 1.0.2
 "     Summary: Provides a collection of macros and functions for programming
 "              C/C++
-" Last Change: $Date: 2006/04/26 11:48:50 $
-" Revision:    $Revision: 1.50 $
+" Last Change: $Date: 2006/04/27 09:05:16 $
+" Revision:    $Revision: 1.51 $
 "
-" $Id: cmaxx.vim,v 1.50 2006/04/26 11:48:50 maxx Exp $
+" $Id: cmaxx.vim,v 1.51 2006/04/27 09:05:16 maxx Exp $
 
 
 " ===========================================================================
@@ -289,7 +289,7 @@ if !exists("g:CMAxx_NoMappings")
 	vnoremap <leader>d :<C-U>call CMAxx_expandSelection("dox")<cr>
 
 	" Settings:
-	nmap <leader>s :call CMAxx_ShowSettings()<cr>
+	nmap <leader>S :call CMAxx_ShowSettings()<cr>
 
 	" List Templates:
 	nmap <leader>l :call CMAxx_listFiles()<cr>
@@ -748,7 +748,7 @@ fun! CMAxx_doExpand( arg, ... )
 	" First we have to substitute the #CURSOR# macro:
 	call CMAxx_Substitute(pstart, pend, 'CURSOR', s:CMAxx_CURSORSubstitute)
 	if CMAxx_findMacroName('AUTHOR', pstart, pend) != ''
-		if !exists("b:CMAxx_Author") || strlen(s:CMAxx_Author) == 0
+		if !exists("b:CMAxx_Author") || strlen(b:CMAxx_Author) == 0
 			let b:CMAxx_Author = input('Author Name: ')
 		endif
 		call CMAxx_Substitute(pstart, pend, 'AUTHOR', b:CMAxx_Author)
@@ -767,7 +767,7 @@ fun! CMAxx_doExpand( arg, ... )
 	call CMAxx_Substitute(pstart, pend, 'DATE', strftime("%d. %b %Y, %X"))
 	" TODO: change this.
 	if CMAxx_findMacroName('VERSION', pstart, pend) != ''
-		if !exists("b:CMAxx_Version") ||strlen(b:CMAxx_Version) == 0 && 
+		if !exists("b:CMAxx_Version") || strlen(b:CMAxx_Version) == 0
 			let b:CMAxx_Version = input "Version: "
 		endif
 		call CMAxx_Substitute(pstart, pend, 'VERSION', b:CMAxx_Version)
@@ -950,7 +950,7 @@ fun! CMAxx_ShowSettings()
 	let zbak = @z
 	if v:version > 700
 		let @z = ""
-\."\" Script: cmaxx $Revision: 1.50 $"
+\."\" Script: cmaxx $Revision: 1.51 $"
 \."\n\" Current Directory: ".expand('%:p:h')
 \."\n\" CMAxx's Variables Are:"
 \."\n\"let b:CMAxx_LocalTemplates  = \'".b:CMAxx_LocalTemplates."\'"
@@ -972,7 +972,7 @@ fun! CMAxx_ShowSettings()
 \."\n\" ./.cmaxxrc press 's'."
 	else
 		let @z = ""
-\."\" Script: cmaxx $Revision: 1.50 $"
+\."\" Script: cmaxx $Revision: 1.51 $"
 \."\n\" Current Directory: ".expand('%:p:h')
 \."\n\" CMAxx's Variables Are:"
 \."\n\"let b:CMAxx_LocalTemplates  = \'".b:CMAxx_LocalTemplates."\'"
