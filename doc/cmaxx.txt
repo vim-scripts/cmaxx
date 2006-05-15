@@ -3,7 +3,7 @@
 
                                                                        *cmaxx*
                             CMAxx Template Plugin
-                                Version 1.0.2
+                                Version 1.1.0
 
                           Markus (MAxx) Trenkwalder
                       markus (at) trenkwalder (dot) name
@@ -359,6 +359,12 @@ b:CMAxx_LocalTemplates	string (default ".")
 			buffer can  be found.   In this  way project  specific
 			templates can be used.
 
+                                                       *g:CMAxx_ListDelimiter*
+g:CMAxx_ListDelimiter	character (default '|')
+			Defines the character  which splits  |macro-variables|
+			into tokens  and  in this  way  makes the  variable  a
+			|macro-list-variable|.
+
                                                          *g:CMAxx_TemplateDir*
 g:CMAxx_TemplateDir	string (default
 				UNIX:		$HOME/.vim/templates,
@@ -385,6 +391,45 @@ you have to set the variable like this: >
 When expanding a template containing this macro the value of the variable will
 be used to replace the macro.
 
+                                                        *macro-list-variables*
+Macro variables may  also contain  selection lists.   The script  determines a
+list by  searching  for a  character  defined by  the  |g:CMAxx_ListDelimiter|
+variable.  If this character is found, it  is used to split the variable value
+into tokens.  Each  token will be numbered  continuously starting at  1.  When
+the macro is found in a  template the list will be  presented and the user has
+to select an  element by  its number.   For  example suppose  the above  macro
+"MYMACRO".  Let the variable for this macro now be: >
+
+		:let g:MYMACRO = "one|two|three|four"
+<
+When the macro is expanded the following list will be displayed: >
+
+				1. one
+				2. two
+				3. three
+				4. four
+				Selection:
+<
+When one of  the listed numbers  is entered,  the corresponding value  will be
+used for the macro expansion.
+
+                                                          *macro-list-default*
+There exists the possibility  to define a  default selection for  a list macro
+variable.  Such a default value  is defined by another variable.   Its name is
+composed of  the macro  name plus  the word  "default".   If  for example  the
+default value for the above  list should be the second  one, then the variable
+definition would look as follows: >
+
+			:let g:MYMACROdefault = 2
+<
+In this case the list display would look like this: >
+
+			1. one
+			2. two
+			3. three
+			4. four
+			Selection (default: 1):
+<
 
 ------------------------------------------------------------------------------
 8. Collaboration Diagram                                        *cmaxx-collab*
@@ -394,44 +439,62 @@ This "diagram" shows the function  collaboration in the script.   This diagram
 was mainly created to help the author understand his code ;)
 >
 
-  CMAxx_expandTemplate   CMAxx_expandSelection   CMAxx_expandFunction
-       |                           |                     |   |
-       +---------------+   +-------+                     |   |
-                       |   |   +-------------------------+   |
-                       |   |   |                             |
-                       V   V   V                             +-------------+
-                     CMAxx_doExpand                                        |
-                     | |  | | | | |                                        |
-          +----------+ |  | | | | +-------------------------------------+  |
-          |            |  | | | +------------------------------+        |  |
-          V            |  | | +-----------------------+        |        |  |
-  CMAxx_Substitute     |  | +----------------+        |        V        |  |
-       |   |           |  +-------+          |        |  CMAxx_strpart  |  |
-       |   |           V          |          |        |        |        |  |
-       |   |  CMAxx_findMacroName |          |        |        +--+     |  |
-       |   |           |          |          |        V           |     |  |
-       |   +--+    +---+          |          |  CMAxx_Substitute  |     |  |
-       |      |    |              |          V                    V     V  V
-       |      |    |              |    CMAxx_findFile            CMAxx_escape
-       |      V    V              V          |
-       |  CMAxx_findMacro  CMAxx_setCursor   |
-       |                                     V
-       +--+                           CMAxx_doFindFile
-          |
-          V
-   CMAxx_substMacro
-          |
-          V
-  CMAxx_substSpecial
+  +----------------------+ +-----------------------+ +----------------------+
+  | CMAxx_expandTemplate | | CMAxx_expandSelection | | CMAxx_expandFunction |
+  +----------------------+ +-----------------------+ +----------------------+
+             |                         |                     |   |
+             +---------+   +-----------+                     |   |
+                       |   |   +-----------------------------+   |
+                       |   |   |                                 |
+                       V   V   V                                 +--------+
+                   +----------------+                                     |
+                   | CMAxx_doExpand |                                     |
+                   +----------------+                                     |
+                     | |    | | | |                                       |
+          +----------+ |    | | | +------------------------------------+  |
+          |            |    | | +-----------------------------+        |  |
+          V            |    | +-------------------+           |        |  |
+ +------------------+  |    +--------+            |           V        |  |
+ | CMAxx_Substitute |  |             |            |  +---------------+ |  |
+ +------------------+  |             |            |  | CMAxx_strpart | |  |
+      |   |            V             |            |  +---------------+ |  |
+      |   | +---------------------+  |            |           |        |  |
+      |   | | CMAxx_findMacroName |  |            |           +--+     |  |
+      |   | +---------------------+  |            |              |     |  |
+      |   |            |             |            V              V     V  V
+      |   +---+    +---+             |    +----------------+  +--------------+
+      |       |    |                 |    | CMAxx_findFile |  | CMAxx_escape |
+      |       V    V                 V    +----------------+  +--------------+
+      | +-----------------+ +-----------------+    |
+      | | CMAxx_findMacro | | CMAxx_setCursor |    |
+      | +-----------------+ +-----------------+    |
+      |                                            V
+      +-------+                           +------------------+
+              |                           | CMAxx_doFindFile |
+              V                           +------------------+
+     +------------------+
+     | CMAxx_substMacro |
+     +------------------+
+              |
+              V
+    +--------------------+
+    | CMAxx_substSpecial |
+    +--------------------+
 
 
-                                CMAxx_ShowSettings
+                              +--------------------+
+                              | CMAxx_ShowSettings |
+                              +--------------------+
 
 
-                                 CMAxx_listFile
-                                       |
-                                       V
-                                CMAxx_doListFiles
+                                +----------------+
+                                | CMAxx_listFile |
+                                +----------------+
+                                        |
+                                        V
+                              +-------------------+
+                              | CMAxx_doListFiles |
+                              +-------------------+
 <
 
 ------------------------------------------------------------------------------
@@ -439,34 +502,39 @@ was mainly created to help the author understand his code ;)
 
 - If the selection ends at the beforelast column,  the template is expanded at
   the wrong place (ie. after the last character).
+- When changing the buffer, the buffer local variables will be reset.
 
 
 ------------------------------------------------------------------------------
 10. Feature Requests                                          *cmaxx-requests*
 
-Planned for the next version (1.1):
+Planed for the next version (1.1):
 - A selection of some default values for a macro.
-- A buffer simular to the one in bufexplorer for all known templates of the
+
+Planed for version 1.2:
+- A buffer simular  to the one in  bufexplorer for all known  templates of the
   current filetype.
   -> CMAxx_listFiles() already creates such lists.
 
-Planed for version 1.2:
+Planed for version 1.3:
 - The possibility of comments in the templates.
   -> A possible comment character could be a double "b:CMAxx_Delimiter".
+
+Planed for version 1.4:
 - Add a syntax script for the template files.
 
-Planed for version 1.3:
-- Indent calculation: take "tabstop" and "softtabstop" in account for
-  the calculation of indent in CMAxx_doExpand.
-- "Tab completion": in insert mode press <TAB> to complete to either a
-  reserved word, a template or a word previousely typed (like in <CTRL-N>)
-  -> This inplies that the script knows about all existing templates.
+Planed for version 1.5:
+- Indent  calculation: take  "tabstop" and  "softtabstop" in  account for  the
+  calculation of indent in CMAxx_doExpand.
 
 Noted but not planed:
-- expandFunction only works in one line function definitions
+- "Tab  completion":  in insert  mode  press <TAB>  to  complete to  either  a
+  reserved word, a template or a word previousely typed (like in <CTRL-N>).
+  -> This inplies that the script knows about all existing templates.
+- expandFunction only works in one line function definitions.
   -> This could be solved using a mapping for the visual mode.
-- function for scanning a function definition and adding doxygen comments
-  for all parameters and the return value
+- Function for scanning a function definition  and adding doxygen comments for
+  all parameters and the return value.
   -> Possible solution: using a spezial "#ARGUMENT#" macro.
 
 
@@ -477,4 +545,4 @@ No todos at the moment.
 
 
 ------------------------------------------------------------------------------
-vim:tw=78:noet:wrap:ts=8:ft=help:norl:sts=8:et
+vim:tw=78:noet:wrap:ts=8:ft=help:norl:sw=8:et

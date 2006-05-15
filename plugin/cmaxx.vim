@@ -1,12 +1,12 @@
 "
 "  Maintainer: Markus (MAxx) Trenkwalder
-"     Version: 1.0.2
+"     Version: 1.1.0
 "     Summary: Provides a collection of macros and functions for programming
 "              C/C++
-" Last Change: $Date: 2006/04/27 09:05:16 $
-" Revision:    $Revision: 1.51 $
+" Last Change: $Date: 2006/05/15 20:51:25 $
+" Revision:    $Revision: 1.54 $
 "
-" $Id: cmaxx.vim,v 1.51 2006/04/27 09:05:16 maxx Exp $
+" $Id: cmaxx.vim,v 1.54 2006/05/15 20:51:25 maxx Exp $
 
 
 " ===========================================================================
@@ -31,7 +31,6 @@
 "   -> This inplies that the script knows about all existing templates.
 " - The possibility of comments in the templates.
 "   -> A possible comment character could be a double "b:CMAxx_Delimiter".
-" - A selection of some default values for a macro.
 " - Add a syntax script for the template files.
 " }}}
 "
@@ -71,6 +70,14 @@
 " - Possibility to turn off the mappings.
 "   => Added two variables to turn them off: "g:CMAxx_NoExpansionKey" and
 "      "g:CMAxx_NoMappings".	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	060426
+" - A selection of some default values for a macro.
+"   -> This is best done by using already existing functionality. We will
+"      use the macro variabls to do this. For this the variable value has to
+"      be split in tokens. To do this we need a delimiter and this delimiter
+"      will be defined in the variable "g:CMAxx_ListDelimiter". If than a
+"      delimiter is found in the variables value, a list with all values in
+"      the list is shown, when the macro is expanded.
+"   => Done as described above.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	060429
 " }}}
 "
 "
@@ -132,6 +139,9 @@
 " x The same as with b:CMAxx_ConvertPrefix may have happend with
 "   b:CMAxx_Author and b:CMAxx_Version.
 "   => Fixed by checking the existance of the variable first.	.	fixed 060426
+" x When a list macro is used several times in a template the
+"   selection is shown for every occurence.
+"   => Fixed by adding the variable "s:CMAxx_ListSelected".	.	.	fixed 060513
 " }}}
 "
 "
@@ -220,7 +230,7 @@
 "										- Fixed the settings dialog to show the right values.
 "										Other changes:
 "										- Added a version check (this script works for vim-7.0aa
-"										  and higher only.
+"										  and higher only).
 " 1.0.1 25.04.2006	Other changes:
 "										- Made it work with 6.x again.
 " 1.0.2 26.04.2006	Fixed bugs:
@@ -238,6 +248,12 @@
 "										- Two variables "g:CMAxx_NoExpansionKey" and
 "										  "g:CMAxx_NoMappings" now controll the creation of the
 "										  default mappings.
+" 1.0.3 27.04.2006	Fixed bugs:
+"										- A bug related to the buffer local variables found by
+"										  Andreas Karpen.
+" 1.1.0 29.04.2006	New features:
+"										- Macro variables may now contain lists of values which
+"											will be presented as selection lists during expansion.
 " }}}
 "
 " }}}
@@ -256,6 +272,7 @@ au BufRead,BufNew,VimEnter	*
 	\ let b:CMAxx_ConvertPrefix  = 1
 
 let g:CMAxx_Delimiter          = "@"
+let g:CMAxx_ListDelimiter      = "|"
 
 
 " ===========================================================================
@@ -308,6 +325,7 @@ let s:CMAxx_LocalConfig1     = '.cmaxxrc'
 let s:CMAxx_LocalConfig2     = '_cmaxxrc'
 let s:CMAxx_LocalConfig3     = 'cmaxxrc'
 let s:CMAxx_CURSORSubstitute = '__CURSOR__'
+let s:CMAxx_SelectionQ       = "Selection"
 " }}}
 
 
@@ -456,7 +474,7 @@ endfun
 
 " Function:  Expands the <name> argument to a search string and cals
 "            CMAxx_findMacro with this search string.
-" Arguments: <name>  The macro name part of the search string.
+" Arguments: <name>   The macro name part of the search string.
 "            <a:1>    Start position of the search. If omitted, the function
 "                     searches from the gebinning of the text.
 "            <a:2>    End position of the search. If omitted, the function
@@ -486,6 +504,79 @@ endfun
 " }}} CMAxx_findMacroName( name, ... )
 
 
+" Function:  Vim version independence wrapper for the spit command.
+"            The funcion uses "g:CMAxx_ListDelimiter" to split the string.
+"            The result is saved in "s:CMAxx_List", a string for the
+"            interaction with the user is saved in "s:CMAxx_Selection".
+"            To get a specific value from the list, CMAxx_getElement()
+"            should be used.
+" Arguments: <string>	The string to be split.
+" Return:    The number of tokens in the string.
+" {{{ CMAxx_split( string )
+fun! CMAxx_split( string )
+	if v:version >= 700
+		let s:CMAxx_List = split(a:string, g:CMAxx_ListDelimiter)
+		let size = len(s:CMAxx_List)
+		let idx = 0
+		let s:CMAxx_Selection = ""
+		while idx < size
+			let s:CMAxx_Selection .=
+				\ idx+1 . ". " . s:CMAxx_List[idx] . "\n"
+			let idx += 1
+		endwhile
+		let s:CMAxx_Selection .= s:CMAxx_SelectionQ
+		return size
+	else
+		let size = 1
+		let s:CMAxx_List =
+			\ g:CMAxx_ListDelimiter.size.g:CMAxx_ListDelimiter.a:string
+		let pos = match(s:CMAxx_List, g:CMAxx_ListDelimiter, 3)
+		while pos != -1
+			let size = size+1
+			let theleft = strpart(s:CMAxx_List, 0, pos)
+			let theright = strpart(s:CMAxx_List, pos+1)
+			let s:CMAxx_List =
+				\ theleft.g:CMAxx_ListDelimiter.size.g:CMAxx_ListDelimiter.theright
+			let pos =
+				\ match(s:CMAxx_List, g:CMAxx_ListDelimiter, pos+strlen(size)+2)
+		endwhile
+		let pattern = g:CMAxx_ListDelimiter."\\([0-9]\\+\\)".g:CMAxx_ListDelimiter
+		let s:CMAxx_Selection =
+			\ substitute(s:CMAxx_List, pattern, "\\1. ", "")
+		let s:CMAxx_Selection =
+			\ substitute(s:CMAxx_Selection, pattern, "\n\\1. ", "g")
+		let s:CMAxx_Selection = s:CMAxx_Selection . "\n" . s:CMAxx_SelectionQ
+		return size
+	endif
+endfun
+" }}} CMAxx_split( string )
+
+
+" Function:  Returns the n-th element from "s:CMAxx_List".
+"            This is a vim verison independence wrapper.
+" Argument:  <n>   The index in the list.
+" Return:    The n-th element as string.
+" {{{ CMAxx_getElement( n )
+fun! CMAxx_getElement( n )
+	if v:version >= 700
+		return s:CMAxx_List[a:n-1]
+	else
+		let pattern = g:CMAxx_ListDelimiter.a:n.g:CMAxx_ListDelimiter
+		let pos = match(s:CMAxx_List, pattern)
+		if pos == -1
+			return ""
+		endif
+		let pos = pos+strlen(pattern)
+		let end = match(s:CMAxx_List, g:CMAxx_ListDelimiter, pos)
+		if end == -1
+			return strpart(s:CMAxx_List, pos)
+		else
+			return strpart(s:CMAxx_List, pos, end-pos)
+	endif
+endfun
+" }}} CMAxx_getElement( n )
+
+
 " Function:  Replaces the macro applied by a:smac with the user defined
 "            value in a:scal.
 " Arguments: <sline> The line number where the macro should be replaced.
@@ -501,16 +592,37 @@ fun! CMAxx_substMacro( sline, smac, sval )
 		return 0
 	endif
 
+	" Time to look at the value:
+	let valcnt = CMAxx_split(a:sval)
+	let val1 = a:sval
+	if valcnt > 1
+		let sel = s:CMAxx_ListSelected
+		if sel == 0
+			if exists("g:".a:smac."default")
+				exec ":let s:CMAxx_SelectionDefault=g:".a:smac."default"
+				let sel = input(s:CMAxx_Selection." (default: ".s:CMAxx_SelectionDefault."): ", s:CMAxx_SelectionDefault)
+			else
+				let sel = input(s:CMAxx_Selection.": ")
+			endif
+			while sel<1 || sel>valcnt
+				let sel =
+					\ input(sel." is not a valid selection!\n".s:CMAxx_SelectionQ.": ")
+			endwhile
+			let s:CMAxx_ListSelected = sel
+		endif
+		let val1 = CMAxx_getElement(sel)
+	endif
+
 	let cmdsearch =
 		\ ':[^:'.g:CMAxx_Delimiter.']\+:[^:'.g:CMAxx_Delimiter.']\+'.
 		\ g:CMAxx_Delimiter
 	let typecmd = matchstr(match, cmdsearch)
-	let val = a:sval
+	let val = val1
 	if typecmd != ""
 		let type = matchstr(typecmd, ':[^:]:')
 		let type = strpart(type, 1, strlen(type)-2)
-		let cmd = matchstr(typecmd, ':[^:'.g:CMAxx_Delimiter.']\+'.
-			\ g:CMAxx_Delimiter)
+		let cmd =
+			\ matchstr(typecmd, ':[^:'.g:CMAxx_Delimiter.']\+'.g:CMAxx_Delimiter)
 		let cmd = strpart(cmd, 1, strlen(cmd)-2)
 
 		if type == 'a'
@@ -676,6 +788,8 @@ endfun
 fun! CMAxx_doExpand( arg, ... )
 	" Save default buffer
 	let save_def_reg = @"
+	" List selection setup:
+	let s:CMAxx_ListSelected = 0
 	" Check file existense:
 	let filename = CMAxx_findFile(a:arg)
 	" extra arguments:
@@ -768,7 +882,7 @@ fun! CMAxx_doExpand( arg, ... )
 	" TODO: change this.
 	if CMAxx_findMacroName('VERSION', pstart, pend) != ''
 		if !exists("b:CMAxx_Version") || strlen(b:CMAxx_Version) == 0
-			let b:CMAxx_Version = input "Version: "
+			let b:CMAxx_Version = input("Version: ")
 		endif
 		call CMAxx_Substitute(pstart, pend, 'VERSION', b:CMAxx_Version)
 	endif
@@ -950,7 +1064,7 @@ fun! CMAxx_ShowSettings()
 	let zbak = @z
 	if v:version > 700
 		let @z = ""
-\."\" Script: cmaxx $Revision: 1.51 $"
+\."\" Script: cmaxx $Revision: 1.54 $"
 \."\n\" Current Directory: ".expand('%:p:h')
 \."\n\" CMAxx's Variables Are:"
 \."\n\"let b:CMAxx_LocalTemplates  = \'".b:CMAxx_LocalTemplates."\'"
@@ -972,7 +1086,7 @@ fun! CMAxx_ShowSettings()
 \."\n\" ./.cmaxxrc press 's'."
 	else
 		let @z = ""
-\."\" Script: cmaxx $Revision: 1.51 $"
+\."\" Script: cmaxx $Revision: 1.54 $"
 \."\n\" Current Directory: ".expand('%:p:h')
 \."\n\" CMAxx's Variables Are:"
 \."\n\"let b:CMAxx_LocalTemplates  = \'".b:CMAxx_LocalTemplates."\'"
